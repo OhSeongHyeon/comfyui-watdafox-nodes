@@ -1,13 +1,21 @@
 from typing import Any
-from .py.random_image_size import RandomImageSizeAdvancedYAML
+from .py.random_image_size import RandomImageSizeAdvancedYAML, RandomImageSizeAdvanced
+from .py.watda_number import IntegerPicker, RandomInteger
+
 
 
 NODE_CLASS_MAPPINGS: dict[str, Any] = {
     "RandomImageSizeAdvancedYAML": RandomImageSizeAdvancedYAML,
+    "RandomImageSizeAdvanced": RandomImageSizeAdvanced,
+    "IntegerPicker": IntegerPicker,
+    "RandomInteger": RandomInteger,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS: dict[str, Any] = {
     "RandomImageSizeAdvancedYAML": "RandomImageSizeAdvancedYAML",
+    "RandomImageSizeAdvanced": "RandomImageSizeAdvanced",
+    "IntegerPicker": "IntegerPicker",
+    "RandomInteger": "RandomInteger",
 }
 
 WEB_DIRECTORY = "./web"
