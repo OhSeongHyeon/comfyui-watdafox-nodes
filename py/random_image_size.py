@@ -206,3 +206,183 @@ class RandomImageSizeAdvancedYAML:
 
         return ({"samples": latent}, width, height, str_result_resolution)
 
+
+# YAML 파일이 아닌 해상도 하드코딩값 사용
+class RandomImageSizeAdvanced:
+    """You can select a specific image resolution or have one chosen at random.
+    """
+    
+    def __init__(self):
+        """Initialize the node with the appropriate device."""
+        self.device = comfy.model_management.intermediate_device()
+
+    MODEL_RESOLUTIONS = {
+        "SDXL": [
+            "704x1408", "704x1344", "768x1344", "768x1280", "832x1216", "832x1152", "896x1152", 
+            "896x1088", "960x1088", "960x1024", "1024x1024", "1024x960", "1088x960", "1088x896", 
+            "1152x896", "1152x832", "1216x832", "1280x768", "1280x704", "1344x768", "1344x704", 
+            "1408x704", "1408x640", "1472x704", "1536x640", "1600x640", "1664x576", "1728x576"
+        ],
+        "Qwen": [
+            "928x1664", "1056x1584", "1140x1472", "1328x1328", "1664x928", "1584x1056", 
+            "1472x1140"
+        ],
+        "Flux": [
+            "768x1024", "960x1280", "960x1440", "1024x1536", "512x512", "768x768", "1024x1024", 
+            "1536x1536", "1024x768", "1280x960", "1440x960", "1536x1024"
+        ],
+        "Flux2": [
+            "1408x2816", "1408x2688", "1536x2688", "1536x2560", "1664x2432", "1664x2304", 
+            "1792x2304", "1792x2176", "1920x2176", "1920x2048", "2048x2048", "2048x1920", 
+            "2176x1920", "2176x1792", "2304x1792", "2304x1664", "2432x1664", "2560x1536", 
+            "2560x1408", "2688x1536", "2688x1408", "2816x1408", "2816x1280", "2944x1408", 
+            "3072x1280", "3200x1280", "3328x1152", "3456x1152"
+        ]
+    }
+    ALL_RESOLUTIONS_LIST = []
+    RESOLUTIONS_KEY_LIST = ['None', 'All']
+
+    for k, v in MODEL_RESOLUTIONS.items():
+        RESOLUTIONS_KEY_LIST.append(k)
+        for i in v:
+            ALL_RESOLUTIONS_LIST.append(f'{k} {i}')
+
+    @classmethod
+    def INPUT_TYPES(s):
+        all_res = s.ALL_RESOLUTIONS_LIST
+        all_res_keys = s.RESOLUTIONS_KEY_LIST
+
+        return {
+            "required": {
+                "batch_size": ("INT", {
+                    "default": 1,
+                    "min": 1,
+                    "max": 64,
+                    "step": 1,
+                    "display": "number"
+                }),
+                "random_pick_state": (all_res_keys, {
+                    "default": all_res_keys[0],
+                }),
+                "image_size": (all_res, {
+                    "default": all_res[0],
+                }),
+                "width_override": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 8,
+                    "display": "number"
+                }),
+                "height_override": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 8,  
+                    "display": "number"
+                }),
+                "add_random_resolutions": ("STRING", {
+                    "default": "",
+                    "multiline": True,
+                    "placeholder": "add_random_resolutions\nWhen the random selection feature is enabled, it is added to the resolution list. Use commas, semicolons, and spaces to separate. Examples: 704x1344, 1024x1024; 1280x768",
+                    "dynamicPrompts": False,
+                }),
+                "override_random_resolutions": ("STRING", {
+                    "default": "",
+                    "multiline": True,
+                    "placeholder": "override_random_resolutions\nWhen the random selection feature is enabled, resolutions are chosen from the list you provide here. Use commas, semicolons, and spaces to separate them. Example: 704x1344, 1024x1024; 1280x768",
+                    "dynamicPrompts": False,
+                }),
+                "str_result_resolution": ("STRING", {
+                    "default": "",
+                    # "multiline": True,
+                    # "placeholder": "",
+                    "dynamicPrompts": False,
+                }),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+                # "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+
+    CATEGORY = "watdafox/latent"
+    RETURN_TYPES = ("LATENT", "INT", "INT", "STRING")
+    RETURN_NAMES = ("LATENT", "width", "height", "str_result_resolution")
+    FUNCTION = "execute"
+
+    OUTPUT_NODE = True
+
+    @classmethod
+    def IS_CHANGED(s, *args, **kwargs):
+        return float("NaN")
+
+    def execute(
+        self,
+        batch_size: int,
+        random_pick_state: str,
+        image_size: str,
+        width_override: int = 0,
+        height_override: int = 0,
+        add_random_resolutions: str = "",
+        override_random_resolutions: str = "",
+        str_result_resolution: str = "",
+        unique_id = None,
+        # extra_pnginfo = None,
+    ) -> tuple:
+        
+        resolution = ''
+        width, height = 0, 0
+
+        if random_pick_state == 'None':
+            resolution = image_size.split(' ', 1)[1]
+        else:
+            selected_res_list = []
+
+            # 해상도 목록 결정. override 최우선, override 없으면 기본 목록을 가져옴.
+            if override_random_resolutions.strip():
+                selected_res_list = validate_and_parse_resolutions(override_random_resolutions)
+            else:
+                if random_pick_state == 'All':
+                    selected_res_list = [item.split(' ', 1)[1] for item in self.ALL_RESOLUTIONS_LIST]
+                else:
+                    selected_res_list = [item for item in self.MODEL_RESOLUTIONS[random_pick_state]]
+
+                if add_random_resolutions.strip():
+                    selected_res_list.extend(validate_and_parse_resolutions(add_random_resolutions))
+
+            if not selected_res_list:
+                raise ValueError("No resolutions available to choose from. Check your settings.")
+            
+            resolution = random.choice(selected_res_list)
+
+        try:
+            width_str, height_str = resolution.split("x")
+            width = int(width_str)
+            height = int(height_str)
+        except (ValueError, IndexError):
+            raise ValueError(f"Invalid resolution format: {resolution}. Expected format: 'NUMBERxNUMBER'")
+
+        # 랜덤기능 활성화 여부 상관없이 w, h 가 0보다 크면 덮어씀 (사용자 입력을 받는 값을 최우선으로 함)
+        if width_override > 0:
+            width = width_override
+        if height_override > 0:
+            height = height_override
+        
+        if not (width_override > 0 or height_override > 0):
+            width = (width // 64) * 64
+            height = (height // 64) * 64
+
+        latent = torch.zeros([max(1, batch_size), 4, height // 8, width // 8], device=self.device)
+
+        str_result_resolution = f'{width}x{height}'
+
+        # WEB_DIRECTORY 에 정의된 js 파일에서 프론트엔드 데이터처리, param1: event-listener-name, param2: data(json)
+        PromptServer.instance.send_sync("watdafox-api", {
+            "node_id": unique_id,
+            "target_widget_name": "str_result_resolution",
+            "data_type": "text",
+            "data": str_result_resolution
+        })
+
+        return ({"samples": latent}, width, height, str_result_resolution)
