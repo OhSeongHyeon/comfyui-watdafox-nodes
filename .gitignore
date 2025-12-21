@@ -192,3 +192,4 @@ pyrightconfig.json
 # Custom
 /py/test.py
 *.bak*
+/yaml/model_resolutions.yaml
