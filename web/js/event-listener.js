@@ -22,29 +22,31 @@ api.addEventListener("watdafox-api", (event) => {
     }
 });
 
-// 좀 위험해보임...
-// api.addEventListener("watdafox-node-fix", (event) => {
-// 	const nodes = app.graph._nodes_by_id;
-//     const node = nodes[event.detail.node_id];
-//     if (!node) {
-//         console.warn(`[watdafox-api] Node not found: ${event.detail.node_id}`);
-//         return;
-//     }
-    
-//     const target_widgets = event.detail["fix_target_widgets"];
-//     target_widgets.forEach((target) => {
-//         const target_widget = node?.widgets.find((w) => w.name === target);
-//         if (!target_widget) return;
+// 좀 위험...???
+// 사용 로컬마다 yaml 파일 다를 경우 노드위젯 교정시도
+api.addEventListener("watdafox-node-fix", (event) => {
+	const nodes = app.graph._nodes_by_id;
+    const node = nodes[event.detail.node_id];
+    if (!node) {
+        console.warn(`[watdafox-node-fix] Node not found: ${event.detail.node_id}`);
+        return;
+    }
+    console.warn('[watdafox-node-fix] Attempted node widget calibration');
 
-//         const { data_type, data } = event.detail;
-//         if (data_type === "json") {
-//             if (Array.isArray(data[target])) {
-//                 target_widget.value = data[target][0];
-//                 target_widget.options.values = data[target];
-//             }
-//             else {
-//                 target_widget.value = data[target];
-//             }
-//         }
-//     });
-// });
+    const target_widgets = event.detail["fix_target_widgets"];
+    target_widgets.forEach((target) => {
+        const target_widget = node?.widgets.find((w) => w.name === target);
+        if (!target_widget) return;
+
+        const { data_type, data } = event.detail;
+        if (data_type === "json") {
+            if (Array.isArray(data[target])) {
+                target_widget.value = data[target][0];
+                target_widget.options.values = data[target];
+            }
+            else {
+                target_widget.value = data[target];
+            }
+        }
+    });
+});

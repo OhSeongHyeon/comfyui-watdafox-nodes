@@ -16,26 +16,29 @@ class RandomImageSizeAdvancedYAML:
         """Initialize the node with the appropriate device."""
         self.device = comfy.model_management.intermediate_device()
 
-    # Load resolutions from YAML file
-    MODEL_RESOLUTIONS = {}
-    ALL_RESOLUTIONS_LIST = []
-    RESOLUTIONS_KEY_LIST = []
-
-    try:
-        yaml_path = Path(__file__).parent.parent / 'yaml' / 'model_resolutions.yaml'
-        with open(yaml_path, 'r') as f:
-            MODEL_RESOLUTIONS = yaml.safe_load(f)
-            if not isinstance(MODEL_RESOLUTIONS, dict):
-                raise KeyError("file is invalid.")
-    except (FileNotFoundError, yaml.YAMLError, KeyError) as e:
-        print(f"Warning: Could not load model_resolutions.yaml ({e}). Using default resolutions.")
-        MODEL_RESOLUTIONS["SDXL"] = [
+    # Define default resolutions first as a fallback.
+    MODEL_RESOLUTIONS = {
+        "SDXL": [
             "704x1344", "768x1280", "832x1216", "896x1152",
             "1024x1024",
             "1152x896", "1216x832", "1280x768", "1344x704"
         ]
-    
-    RESOLUTIONS_KEY_LIST.extend(['None', 'All'])
+    }
+    ALL_RESOLUTIONS_LIST = []
+    RESOLUTIONS_KEY_LIST = ['None', 'All']
+
+    try:
+        yaml_path = Path(__file__).parent.parent / 'yaml' / 'model_resolutions.yaml'
+        if yaml_path.is_file():
+            with open(yaml_path, 'r', encoding='utf-8') as f:
+                loaded_resolutions = yaml.safe_load(f)
+                if not loaded_resolutions:
+                    raise KeyError("file is invalid.")
+                if isinstance(loaded_resolutions, dict):
+                    MODEL_RESOLUTIONS = loaded_resolutions
+    except (yaml.YAMLError, IOError, KeyError) as e:
+        print(f"Warning: Could not load or parse model_resolutions.yaml ({e}). Using default resolutions.")
+
     for k, v in MODEL_RESOLUTIONS.items():
         RESOLUTIONS_KEY_LIST.append(k)
         for i in v:
@@ -107,6 +110,28 @@ class RandomImageSizeAdvancedYAML:
 
     OUTPUT_NODE = True
 
+    # 좀 위험...???
+    # 사용 로컬마다 yaml 파일 다를 경우 노드위젯 교정시도
+    @classmethod
+    def VALIDATE_INPUTS(self, **kwargs):
+        random_pick_state = kwargs.get("random_pick_state")
+        image_size = kwargs.get("image_size")
+        unique_id = kwargs.get("unique_id")
+        #print(f"random_pick_state: {random_pick_state}, image_size: {image_size}, unique_id: {unique_id}")
+
+        if random_pick_state not in self.RESOLUTIONS_KEY_LIST or image_size not in self.ALL_RESOLUTIONS_LIST:
+            print('[watdafox-node-fix] Attempted node widget calibration')
+            PromptServer.instance.send_sync("watdafox-node-fix", {
+                "node_id": unique_id,
+                "fix_target_widgets": ["random_pick_state", "image_size"],
+                "data_type": "json",
+                "data": {
+                    "random_pick_state": self.RESOLUTIONS_KEY_LIST,
+                    "image_size": self.ALL_RESOLUTIONS_LIST
+                },
+            })
+        return True
+
     @classmethod
     def IS_CHANGED(s, *args, **kwargs):
         return float("NaN")
@@ -127,18 +152,6 @@ class RandomImageSizeAdvancedYAML:
         
         resolution = ''
         width, height = 0, 0
-
-        # YAML 파일 로컬마다 다를 경우 오류수정, (validation check 에서 잡히므로 여기 안탐)
-        # if random_pick_state not in self.RESOLUTIONS_KEY_LIST or image_size not in self.ALL_RESOLUTIONS_LIST:
-        #     PromptServer.instance.send_sync("watdafox-node-fix", {
-        #         "node_id": unique_id,
-        #         "fix_target_widgets": ["random_pick_state", "image_size"],
-        #         "data_type": "json",
-        #         "data": {
-        #             "random_pick_state": self.RESOLUTIONS_KEY_LIST,
-        #             "image_size": self.ALL_RESOLUTIONS_LIST
-        #         },
-        #     })
 
         if random_pick_state == 'None':
             resolution = image_size.split(' ', 1)[1]
