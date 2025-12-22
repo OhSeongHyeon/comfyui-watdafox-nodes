@@ -1,5 +1,7 @@
 import re
 from typing import List
+import time
+from datetime import datetime
 
 def str_split_to_list(input_str: str) -> List[str]:
     """
@@ -50,3 +52,7 @@ def validate_and_parse_resolutions(input_str: str) -> List[str]:
             raise ValueError(f"Invalid resolution format: '{res_str}'. Expected format: 'NUMBERxNUMBER'")
             
     return valid_resolutions
+
+def get_time(pattern: str = "%Y-%m-%d %H:%M:%S") -> str:
+    ts = time.time()
+    return datetime.fromtimestamp(ts).strftime(pattern)
