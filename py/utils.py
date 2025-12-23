@@ -2,6 +2,7 @@ import re
 from typing import List
 import time
 from datetime import datetime
+import comfy
 
 def str_split_to_list(input_str: str) -> List[str]:
     """
@@ -54,5 +55,20 @@ def validate_and_parse_resolutions(input_str: str) -> List[str]:
     return valid_resolutions
 
 def get_time(pattern: str = "%Y-%m-%d %H:%M:%S") -> str:
+    """
+    Returns the current local time formatted with the given strftime pattern.
+
+    Args:
+        pattern: A datetime.strftime-compatible format string.
+
+    Returns:
+        A formatted timestamp string for the current local time.
+    """
     ts = time.time()
     return datetime.fromtimestamp(ts).strftime(pattern)
+
+# 디테일러 스케줄러는 리스트요소가 ksam과 다름
+ADDITIONAL_SCHEDULERS = ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]', 'LTXV[default]', 'OSS FLUX', 'OSS Wan', 'OSS Chroma']
+def get_schedulers():
+    return list(comfy.samplers.SCHEDULER_HANDLERS) + ADDITIONAL_SCHEDULERS
+

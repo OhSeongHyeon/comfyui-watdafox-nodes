@@ -14,15 +14,15 @@ class IntegerPicker:
         return {
             "required": {
                 "integer": ("INT", {
-                    "default": 0,
+                    "default": 1,
                     "min": -0x80000000,
                     "max": 0x7FFFFFFF,
                 }),
-                "pick_state": (["fixed", "increment", "decrement", "randomize"], {
+                "mode": (["fixed", "increment", "decrement", "randomize"], {
                     "default": "randomize",
                 }),
                 "min_value": ("INT", {
-                    "default": 0,
+                    "default": 1,
                     "min": -0x80000000,
                     "max": 0x7FFFFFFF,
                 }),
@@ -49,19 +49,18 @@ class IntegerPicker:
     def IS_CHANGED(self, *args, **kwargs):
         return float("NaN")
 
-
-    def execute(self, integer: int = 0, pick_state: str = "randomize", min_value: int = 0, max_value: int = 0, unique_id = None, extra_pnginfo = None):
+    def execute(self, integer: int = 0, mode: str = "randomize", min_value: int = 0, max_value: int = 0, unique_id = None, extra_pnginfo = None):
         if min_value > max_value:
             min_value, max_value = max_value, min_value
         
         result_integer = integer
         current_range = max_value - min_value + 1
 
-        if pick_state == "randomize":
+        if mode == "randomize":
             result_integer = random.randint(min_value, max_value)
-        elif pick_state == "increment":
+        elif mode == "increment":
             result_integer = (integer - min_value + 1) % current_range + min_value
-        elif pick_state == "decrement":
+        elif mode == "decrement":
             result_integer = (integer - min_value - 1 + current_range) % current_range + min_value
 
         PromptServer.instance.send_sync("watdafox-api", {
@@ -86,7 +85,7 @@ class RandomInteger:
         return {
             "required": {
                 "integer": ("INT", {
-                    "default": 0,
+                    "default": 1,
                     "min": -0x80000000,
                     "max": 0x7FFFFFFF,
                 }),
@@ -94,7 +93,7 @@ class RandomInteger:
                     "default": True,
                 }),
                 "min": ("INT", {
-                    "default": 0,
+                    "default": 1,
                     "min": -0x80000000,
                     "max": 0x7FFFFFFF,
                 }),
@@ -120,7 +119,6 @@ class RandomInteger:
     @classmethod
     def IS_CHANGED(self, *args, **kwargs):
         return float("NaN")
-
 
     def execute(self, integer: int = 0, random_on_off: bool = True, min: int = 0, max: int = 0, unique_id = None, extra_pnginfo = None):
         if min > max:

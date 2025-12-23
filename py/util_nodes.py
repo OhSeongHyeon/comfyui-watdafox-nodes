@@ -1,7 +1,10 @@
 from server import PromptServer
-from .utils import get_time
+from .utils import get_time, get_schedulers
 from pathlib import Path
 import random
+from typing import Any
+import comfy
+import re
 
 
 class UniqueStringList:
@@ -35,7 +38,7 @@ class UniqueStringList:
             stripped_item_for_check = item.strip()
 
             if "BREAK" in stripped_item_for_check:
-                # 'BREAK' 키워드가 포함된 항목은 중복 검사에서 제외하고 항상 고유한 것으로 취급
+                # 대문자 'BREAK' 키워드가 포함된 항목은 중복 검사에서 제외하고 항상 고유한 것으로 취급
                 unique_items.append(item)
             else:
                 # 'BREAK' 키워드가 없는 항목에 대해서만 기존 중복 검사 로직을 적용
@@ -58,6 +61,91 @@ class UniqueStringList:
         
         return (unique_text, duplicate_text,)
 
+class UniqueStringListAdvanced:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required": {
+                "remove_whitespaces": ("BOOLEAN", {
+                    "default": True,
+                }),
+                "remove_underscore": ("BOOLEAN", {
+                    "default": False,
+                }),
+                "text": ("STRING", {
+                    "multiline": True,
+                    "default": ""
+                }),
+            },
+        }
+
+    RETURN_TYPES = ("STRING", "STRING",)
+    RETURN_NAMES = ("unique_text", "duplicate_text",)
+    FUNCTION = "execute"
+    CATEGORY = "watdafox/string"
+
+    def execute(self, text: str, remove_whitespaces: bool = True, remove_underscore: bool = False):
+        if not text:
+            return "", ""
+
+        items = text.split(',')
+
+        unique_items = []
+        duplicate_items = []
+        seen = set()
+
+        def normalize_for_key(s: str) -> str:
+            # 중복 판별용 정규화(비교용)
+            if remove_underscore:
+                s = s.replace("_", " ")
+            if remove_whitespaces:
+                # 줄바꿈은 삭제하면 토큰이 붙으니 "공백"으로 바꿔야 함
+                s = s.replace("\r", " ").replace("\n", " ")
+                s = s.strip()
+                s = re.sub(r"\s+", " ", s)  # 내부 공백도 1칸으로
+            return s.strip()
+
+        def format_unique(s: str) -> str:
+            # Unique 출력용 정규화(표시용)
+            if remove_underscore:
+                s = s.replace("_", " ")
+            if remove_whitespaces:
+                s = s.replace("\r", " ").replace("\n", " ")
+                s = s.strip()
+                s = re.sub(r"\s+", " ", s)
+            return s
+
+        for raw in items:
+            # Duplicate는 원본을 유지해야 하므로 raw는 손대지 않고 보관용으로만 씀
+            key = normalize_for_key(raw)
+
+            # remove_whitespaces=True일 때 ",," 같은 빈 토큰 제거
+            if remove_whitespaces and key == "":
+                continue
+
+            # 오직 대문자 'BREAK'만 예외 처리 (case-sensitive)
+            if "BREAK" in key:
+                unique_items.append(format_unique(raw))
+                continue
+
+            if key not in seen:
+                seen.add(key)
+                unique_items.append(format_unique(raw))
+            else:
+                # duplicate는 원본 그대로
+                duplicate_items.append(raw)
+
+        delim_unique = ", " if remove_whitespaces else ","
+        delim_dup = ","
+
+        unique_text = delim_unique.join(unique_items)
+        duplicate_text = delim_dup.join(duplicate_items)
+
+        return unique_text, duplicate_text
+
 
 class OuputDirByModelName:
     def __init__(self):
@@ -67,16 +155,16 @@ class OuputDirByModelName:
     def INPUT_TYPES(self):
         return {
             "required": {
-                "ckpt_name": ("STRING", {
+                "model_name": ("STRING", {
                     "default": "",
                 }),
                 "folder_prefix": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "extra_filename": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "extra_number": ("INT", {
                     "default": -1,
@@ -98,33 +186,37 @@ class OuputDirByModelName:
                 }),
                 "full_path": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "output_dir": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "file_name": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
-                "extra_pnginfo": "EXTRA_PNGINFO",
+                # "extra_pnginfo": "EXTRA_PNGINFO",
             },
         }
 
     RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING",)
-    RETURN_NAMES = ("ckpt_name", "full_path", "output_dir", "file_name",)
+    RETURN_NAMES = ("str_model_name", "full_path", "output_dir", "file_name",)
     FUNCTION = "execute"
     CATEGORY = "watdafox/string"
 
     OUTPUT_NODE = True
 
+    @classmethod
+    def IS_CHANGED(self, *args, **kwargs):
+        return float("NaN")
+
     def execute(
         self,
-        ckpt_name: str = "",
+        model_name: str = "",
         folder_prefix: str = "",
         extra_filename: str = "",
         extra_number: int = -1,
@@ -136,21 +228,21 @@ class OuputDirByModelName:
         output_dir: str = "",
         file_name: str = "",
         unique_id = None,
-        extra_pnginfo = None
+        # extra_pnginfo = None
     ):
-        p = Path(ckpt_name)
+        p = Path(model_name)
         first_dir = p.parts[0] if use_first_dir and len(p.parts) > 1 else ""
-        _ckpt_name = p.stem if use_ckpt_name else ""
+        ckpt_file_name = p.stem if use_ckpt_name else ""
         ymd_hms = get_time("%Y-%m-%d %H%M%S").split(" ")
 
-        output_dir = "/".join([x for x in [folder_prefix + first_dir, _ckpt_name, ymd_hms[0] if use_time_folder else ""] if x.strip()])
+        output_dir = "/".join([x for x in [folder_prefix + first_dir, ckpt_file_name, ymd_hms[0] if use_time_folder else ""] if x.strip()])
         file_name = "-".join([x for x in ["-".join(ymd_hms) if use_time_file_name else "", extra_filename, str(extra_number) if extra_number > -1 else ""] if x.strip()])
         if not file_name:
             file_name = str(random.randint(0, 0xFFFFFFFFFFFFFFFF))
 
         full_path = "/".join([x for x in [output_dir, file_name] if x.strip()])
 
-        PromptServer.instance.send_sync("watdafox-api-list", {
+        PromptServer.instance.send_sync("watdafox-various-api", {
             "node_id": unique_id,
             "target_widget_names": ["output_dir", "file_name", "full_path"],
             "data_type": "json",
@@ -161,7 +253,74 @@ class OuputDirByModelName:
             },
         })
 
-        return (ckpt_name, full_path, output_dir, file_name,)
+        return (model_name, full_path, output_dir, file_name,)
 
 
-# BF파라미터 노드, ksam|디테일러 샘플러 안들어가는거 콤보 합치기, string concat 노드 만들기
+class BFParameters:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required": {
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xFFFFFFFFFFFFFFFF, "control_after_generate": True, }),
+
+                "steps": ("INT", {"default": 30, "min": 1, "max": 1000, }),
+                "cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
+                "sampler": (comfy.samplers.KSampler.SAMPLERS, ),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
+
+                "ups_steps": ("INT", {"default": 20, "min": 1, "max": 1000, }),
+                "ups_cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
+                "ups_sampler": (comfy.samplers.KSampler.SAMPLERS, ),
+                "ups_scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                "ups_denoise": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
+
+                "dt_steps": ("INT", {"default": 20, "min": 1, "max": 1000, }),
+                "dt_cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
+                "dt_sampler": (comfy.samplers.KSampler.SAMPLERS, ),
+                "dt_scheduler": (get_schedulers(), ),
+                "dt_denoise": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
+            }
+        }
+
+    RETURN_TYPES = (
+        "INT", 
+        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, comfy.samplers.KSampler.SCHEDULERS, "FLOAT", 
+        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, comfy.samplers.KSampler.SCHEDULERS, "FLOAT", 
+        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, get_schedulers(), "FLOAT", 
+        "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", 
+    )
+    RETURN_NAMES = (
+        "seed", 
+        "steps", "cfg", "sampler", "scheduler", "denoise", 
+        "ups_steps", "ups_cfg", "ups_sampler", "ups_scheduler", "ups_denoise", 
+        "dt_steps", "dt_cfg", "dt_sampler", "dt_scheduler", "dt_denoise", 
+        "str_sampler", "str_scheduler", "str_ups_sampler", "str_ups_scheduler", "str_dt_sampler", "str_dt_scheduler", 
+    )
+    FUNCTION = "execute"
+    CATEGORY = "watdafox/parameter"
+
+    # DESCRIPTION = ""
+
+    def execute(
+        self, 
+        seed: int, 
+        steps: int, cfg: float, sampler: str, scheduler: str, denoise: float, 
+        ups_steps: int, ups_cfg: float, ups_sampler: str, ups_scheduler: str, ups_denoise: float, 
+        dt_steps: int, dt_cfg: float, dt_sampler: str, dt_scheduler: str, dt_denoise: float, 
+    ):
+
+        return (
+            seed, 
+            steps, cfg, sampler, scheduler, denoise, 
+            ups_steps, ups_cfg, ups_sampler, ups_scheduler, ups_denoise, 
+            dt_steps, dt_cfg, dt_sampler, dt_scheduler, dt_denoise, 
+            sampler, scheduler, ups_sampler, ups_scheduler, dt_sampler, dt_scheduler,
+        )
+
+
+
+

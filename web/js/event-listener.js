@@ -22,11 +22,11 @@ api.addEventListener("watdafox-api", (event) => {
     }
 });
 
-api.addEventListener("watdafox-api-list", (event) => {
+api.addEventListener("watdafox-various-api", (event) => {
 	const nodes = app.graph._nodes_by_id;
     const node = nodes[event.detail.node_id];
     if (!node) {
-        console.warn(`[watdafox-api-list] Node not found: ${event.detail.node_id}`);
+        console.warn(`[watdafox-various-api] Node not found: ${event.detail.node_id}`);
         return;
     }
 
