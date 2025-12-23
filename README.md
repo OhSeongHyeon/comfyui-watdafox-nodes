@@ -1,53 +1,110 @@
 # comfyui-watdafox-nodes
 
-A collection of custom nodes for ComfyUI, adding useful functionalities to your workflows.
+A collection of custom nodes for ComfyUI. Adds utility nodes for resolution selection, integer picking, string list processing, output path helpers, and parameter packs.
 
-## 📥 Installation
+## Installation
 
-1.  Navigate to your `ComfyUI/custom_nodes/` directory.
-2.  Clone this repository:
-    ```bash
-    git clone https://github.com/OhSeongHyeon/comfyui-watdafox-nodes.git
-    ```
-3.  Restart ComfyUI.
+1. Navigate to your `ComfyUI/custom_nodes/` directory.
+2. Clone this repository:
+   ```bash
+   git clone https://github.com/OhSeongHyeon/comfyui-watdafox-nodes.git
+   ```
+3. Restart ComfyUI.
 
-## ✨ Included Nodes
+## Included Nodes
 
-###  latent > RandomImageSizeAdvancedYAML
+- latent > RandomImageSizeAdvancedYAML: Random or fixed resolution with YAML presets and runtime overrides.
+- latent > RandomImageSizeAdvanced: Same behavior, but uses hardcoded presets.
+- number > IntegerPicker: Fixed, increment, decrement, or random integer selection.
+- number > RandomInteger: Randomize integer on/off toggle.
+- string > UniqueStringList: Split comma-separated strings into unique vs duplicate lists.
+- string > UniqueStringListAdvanced: Unique/duplicate split with normalization options.
+- string > OuputDirByModelName: Build output path components from model name and time.
+- parameter > BFParameters: Sampling parameter pack for base/ups/dt groups.
 
-This node generates an empty latent and offers **flexible image resolution settings through predefined lists or random selection**. It also supports manual resolution override. The final selected resolution is immediately displayed in the node's UI for convenience.
+## Node Details
 
+### latent > RandomImageSizeAdvancedYAML
 
-#### Key Features
+Generates an empty latent and supports fixed or random resolution selection. Presets are loaded from `yaml/model_resolutions.yaml` and can be temporarily extended or overridden at runtime.
 
-*   **YAML-based Resolution Presets**: Define and manage your own resolution lists for specific models (e.g., SDXL, SD 1.5) in the `yaml/model_resolutions.yaml` file.
-*   **Random Resolution Selection**: Choose resolutions randomly from a defined list to increase diversity.
-*   **Instant Resolution Override**: Use `width_override` and `height_override` to forcefully set desired resolutions, overriding all other settings. This takes the highest precedence.
-*   **Dynamic Resolution Addition/Replacement**: Temporarily add resolutions to the random pool or completely replace it at workflow execution time.
-*   **Real-time Result Display**: The final selected resolution (especially useful for random picks) is immediately updated in the `str_result_resolution` field, allowing you to see the result before queuing.
+Key features
+- YAML-based resolution presets per model key.
+- Random selection from a preset group or from all presets.
+- `width_override` and `height_override` take highest precedence.
+- `add_random_resolutions` extends the random pool.
+- `override_random_resolutions` replaces the random pool.
+- Resolutions accept `NUMBERxNUMBER` entries separated by commas, semicolons, or spaces.
+- Width/height are rounded down to multiples of 64 unless overrides are provided.
+- The final resolutions are pushed into `str_result_1x_resolution` and `str_result_nx_resolution` in the UI.
 
-#### Parameters (Inputs)
+Inputs (main)
+- `random_pick_state`: `None`, `All`, or a YAML key.
+- `image_size`: Used when `random_pick_state` is `None`.
+- `width_override` / `height_override`: Force final resolution.
+- `resolution_multiplier`: Scale factor used for `nx_width`/`nx_height` and `str_result_nx_resolution`.
 
-*   `batch_size`: The batch size for the generated latent.
-*   `random_pick_state`: Specifies the group of resolutions for random selection. (`None`, `All`, or a key defined in `model_resolutions.yaml`). Setting to `None` disables random picking.
-*   `image_size`: Selects a specific resolution to use when `random_pick_state` is set to `None`.
-*   `width_override` / `height_override`: If a value greater than 0 is entered, it will override the final resolution. It has the highest priority.
-*   `add_random_resolutions`: A list of resolutions to temporarily add to the existing pool for random selection. (e.g., `704x1344, 1024x1024`)
-*   `override_random_resolutions`: If provided, only resolutions from this list will be used for random selection. (e.g., `704x1344, 1024x1024`)
-*   `str_result_resolution`: This field displays the final selected resolution. (Appears as an input in the UI, but shows the output value).
+Outputs
+- `LATENT`, `width`, `height`, `nx_width`, `nx_height`, `str_result_1x_resolution`, `str_result_nx_resolution`.
 
-#### Outputs
+### latent > RandomImageSizeAdvanced
 
-*   `LATENT`: An empty latent sample with the determined resolution.
-*   `width`: The final determined width value.
-*   `height`: The final determined height value.
-*   `str_result_resolution`: The final resolution as a string in `widthxheight` format.
+Same behavior as `RandomImageSizeAdvancedYAML`, but uses hardcoded resolution lists inside `py/random_image_size.py`.
 
-#### 💡 Customizing `model_resolutions.yaml`
+### number > IntegerPicker
 
-You can modify the `yaml/model_resolutions.yaml` file directly to create your own resolution presets.
+Selects an integer based on a mode:
+- `fixed`: Keep the incoming value.
+- `increment`: Wrap around within `[min_value, max_value]`.
+- `decrement`: Wrap around within `[min_value, max_value]`.
+- `randomize`: Random integer within `[min_value, max_value]`.
 
-**Example:**
+Outputs the integer and a string version of it. Also updates the `integer` widget in the UI.
+
+### number > RandomInteger
+
+When `random_on_off` is true, picks a random integer in `[min, max]`. Otherwise passes through the input integer. Outputs the integer and a string version of it, and updates the `integer` widget in the UI.
+
+### string > UniqueStringList
+
+Splits a comma-separated string and separates unique and duplicate items. Items containing `BREAK` are always treated as unique. Whitespace-only items are preserved in the unique output.
+
+Outputs
+- `unique_text`: Comma-joined unique items.
+- `duplicate_text`: Comma-joined duplicates.
+
+### string > UniqueStringListAdvanced
+
+Splits a comma-separated string into unique and duplicate lists with normalization options.
+
+Key behavior
+- `remove_whitespaces`: Collapses whitespace and removes empty tokens.
+- `remove_underscore`: Treats `_` as spaces for comparison/output.
+- Items containing uppercase `BREAK` are always treated as unique.
+- Duplicate detection uses normalized keys, while duplicate output keeps the raw tokens.
+
+Outputs
+- `unique_text`: Joined unique items (`, ` when whitespace removal is enabled, otherwise `,`).
+- `duplicate_text`: Joined duplicates (`,` delimiter).
+
+### string > OuputDirByModelName
+
+Builds `output_dir`, `file_name`, and `full_path` from a model name, optional prefixes, and a timestamp. Values are pushed to the UI widgets via the web event listener.
+
+Key inputs
+- `model_name`: Model name or path string.
+- `folder_prefix`, `extra_filename`, `extra_number`: Optional components.
+- `use_first_dir`, `use_ckpt_name`, `use_time_folder`, `use_time_file_name`: Toggle output parts.
+
+### parameter > BFParameters
+
+Parameter pack that outputs base, upscaling (`ups_*`), and secondary (`dt_*`) sampling values plus string versions of sampler/scheduler names for logging or UI use.
+
+## Customizing model_resolutions.yaml
+
+Edit `yaml/model_resolutions.yaml` to define your own resolution presets.
+
+Example:
 
 ```yaml
 SDXL:
@@ -55,7 +112,7 @@ SDXL:
   - "1152x896"
   - "896x1152"
 
-Hope_Your_Custom_Resolutions:
+Custom:
   - "800x1200"
   - "1200x800"
 ```
