@@ -1,21 +1,15 @@
-from typing import Any
-from .py.random_image_size import RandomImageSizeAdvancedYAML, RandomImageSizeAdvanced
-from .py.watda_number import IntegerPicker, RandomInteger
-from .py.util_nodes import UniqueStringList, UniqueStringListAdvanced, OuputDirByModelName, BFParameters
-# from .py.loader_nodes import CheckpointLoaderWithOuputDirByModelName
-
-
+from .py import random_image_size, watda_number, util_nodes
 
 NODE_CLASS_MAPPINGS = {
-    "RandomImageSizeAdvancedYAML": RandomImageSizeAdvancedYAML,
-    "RandomImageSizeAdvanced": RandomImageSizeAdvanced,
-    "IntegerPicker": IntegerPicker,
-    "RandomInteger": RandomInteger,
-    "UniqueStringList": UniqueStringList,
-    "UniqueStringListAdvanced": UniqueStringListAdvanced,
-    "OuputDirByModelName": OuputDirByModelName,
-    # "CheckpointLoaderWithOuputDirByModelName": CheckpointLoaderWithOuputDirByModelName,
-    "BFParameters": BFParameters,
+    "RandomImageSizeAdvancedYAML": random_image_size.RandomImageSizeAdvancedYAML,
+    "RandomImageSizeAdvanced": random_image_size.RandomImageSizeAdvanced,
+    "IntegerPicker": watda_number.IntegerPicker,
+    "RandomInteger": watda_number.RandomInteger,
+    "UniqueStringList": util_nodes.UniqueStringList,
+    "UniqueStringListAdvanced": util_nodes.UniqueStringListAdvanced,
+    "OuputDirByModelName": util_nodes.OuputDirByModelName,
+    "BFParameters": util_nodes.BFParameters,
+    "BFParametersSimple": util_nodes.BFParametersSimple,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -26,8 +20,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "UniqueStringList": "Unique Text (watdafox)",
     "UniqueStringListAdvanced": "Unique Text Advanced (watdafox)",
     "OuputDirByModelName": "Output Dir By Model Name (watdafox)",
-    # "CheckpointLoaderWithOuputDirByModelName": "Checkpoint Loader With Dir (watdafox)",
     "BFParameters": "BF Parameters (watdafox)",
+    "BFParametersSimple": "BF Parameters Simple (watdafox)",
 }
 
 WEB_DIRECTORY = "./web"

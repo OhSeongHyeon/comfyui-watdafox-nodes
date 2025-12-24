@@ -321,6 +321,51 @@ class BFParameters:
             sampler, scheduler, ups_sampler, ups_scheduler, dt_sampler, dt_scheduler,
         )
 
+class BFParametersSimple:
+    def __init__(self):
+        pass
 
+    @classmethod
+    def INPUT_TYPES(self):
+        return {
+            "required": {
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xFFFFFFFFFFFFFFFF, "control_after_generate": True, }),
+
+                "steps": ("INT", {"default": 30, "min": 1, "max": 1000, }),
+                "cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
+                "sampler": (comfy.samplers.KSampler.SAMPLERS, ),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                "dt_scheduler": (get_schedulers(), ),
+                "denoise1": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
+                "denoise2": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
+            }
+        }
+
+    RETURN_TYPES = (
+        "INT", 
+        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, comfy.samplers.KSampler.SCHEDULERS, get_schedulers(), "FLOAT", "FLOAT",
+        "STRING", "STRING", 
+    )
+    RETURN_NAMES = (
+        "seed", 
+        "steps", "cfg", "sampler", "scheduler", "dt_scheduler", "denoise1", "denoise2",
+        "str_sampler", "str_scheduler", 
+    )
+    FUNCTION = "execute"
+    CATEGORY = "watdafox/parameter"
+
+    # DESCRIPTION = ""
+
+    def execute(
+        self, 
+        seed: int, 
+        steps: int, cfg: float, sampler: str, scheduler: str, dt_scheduler: str, denoise1: float, denoise2: float,
+    ):
+
+        return (
+            seed, 
+            steps, cfg, sampler, scheduler, dt_scheduler, denoise1, denoise2,
+            sampler, scheduler,
+        )
 
 
