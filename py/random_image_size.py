@@ -110,8 +110,8 @@ class RandomImageSizeAdvancedYAML:
         }
 
     CATEGORY = "watdafox/latent"
-    RETURN_TYPES = ("LATENT", "INT", "INT", "INT", "INT", "STRING", "STRING")
-    RETURN_NAMES = ("LATENT", "width", "height", "nx_width", "nx_height", "str_result_1x_resolution", "str_result_nx_resolution")
+    RETURN_TYPES = ("LATENT", "INT", "INT", "INT", "INT", "FLOAT", "STRING", "STRING")
+    RETURN_NAMES = ("LATENT", "width", "height", "nx_width", "nx_height", "resolution_multiplier", "str_result_1x_resolution", "str_result_nx_resolution")
     FUNCTION = "execute"
 
     OUTPUT_NODE = True
@@ -218,7 +218,7 @@ class RandomImageSizeAdvancedYAML:
             },
         })
 
-        return ({"samples": latent}, width, height, nx_width, nx_height, str_result_1x_resolution, str_result_nx_resolution)
+        return ({"samples": latent}, width, height, nx_width, nx_height, resolution_multiplier, str_result_1x_resolution, str_result_nx_resolution)
 
 
 # YAML 파일이 아닌 해상도 하드코딩값 사용
@@ -327,8 +327,8 @@ class RandomImageSizeAdvanced:
         }
 
     CATEGORY = "watdafox/latent"
-    RETURN_TYPES = ("LATENT", "INT", "INT", "INT", "INT", "STRING", "STRING")
-    RETURN_NAMES = ("LATENT", "width", "height", "nx_width", "nx_height", "str_result_1x_resolution", "str_result_nx_resolution")
+    RETURN_TYPES = ("LATENT", "INT", "INT", "INT", "INT", "FLOAT", "STRING", "STRING")
+    RETURN_NAMES = ("LATENT", "width", "height", "nx_width", "nx_height", "resolution_multiplier", "str_result_1x_resolution", "str_result_nx_resolution")
     FUNCTION = "execute"
 
     OUTPUT_NODE = True
@@ -413,4 +413,4 @@ class RandomImageSizeAdvanced:
             },
         })
 
-        return ({"samples": latent}, width, height, nx_width, nx_height, str_result_1x_resolution, str_result_nx_resolution)
+        return ({"samples": latent}, width, height, nx_width, nx_height, resolution_multiplier, str_result_1x_resolution, str_result_nx_resolution)
