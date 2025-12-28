@@ -86,21 +86,21 @@ class RandomImageSizeAdvancedYAML:
                     "default": "",
                     "multiline": True,
                     "placeholder": "add_random_resolutions\nWhen the random selection feature is enabled, it is added to the resolution list. Use commas, semicolons, and spaces to separate. Examples: 704x1344, 1024x1024; 1280x768",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "override_random_resolutions": ("STRING", {
                     "default": "",
                     "multiline": True,
                     "placeholder": "override_random_resolutions\nWhen the random selection feature is enabled, resolutions are chosen from the list you provide here. Use commas, semicolons, and spaces to separate them. Example: 704x1344, 1024x1024; 1280x768",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "str_result_1x_resolution": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "str_result_nx_resolution": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
             },
             "hidden": {
@@ -110,8 +110,8 @@ class RandomImageSizeAdvancedYAML:
         }
 
     CATEGORY = "watdafox/latent"
-    RETURN_TYPES = ("LATENT", "INT", "INT", "INT", "INT", "FLOAT", "STRING", "STRING")
-    RETURN_NAMES = ("LATENT", "width", "height", "nx_width", "nx_height", "resolution_multiplier", "str_result_1x_resolution", "str_result_nx_resolution")
+    RETURN_TYPES = ("LATENT", "INT", "INT", "LATENT", "INT", "INT", "FLOAT", "STRING", "STRING")
+    RETURN_NAMES = ("LATENT", "width", "height", "NX_LATENT", "nx_width", "nx_height", "resolution_multiplier", "str_result_1x_resolution", "str_result_nx_resolution")
     FUNCTION = "execute"
 
     OUTPUT_NODE = True
@@ -200,11 +200,12 @@ class RandomImageSizeAdvancedYAML:
             width = (width // 64) * 64
             height = (height // 64) * 64
 
+        nx_width, nx_height = int(width * resolution_multiplier), int(height * resolution_multiplier)
+
         latent = torch.zeros([max(1, batch_size), 4, height // 8, width // 8], device=self.device)
+        nx_latent = torch.zeros([max(1, batch_size), 4, nx_height // 8, nx_width // 8], device=self.device)
 
         str_result_1x_resolution = f'{width}x{height}'
-
-        nx_width, nx_height = int(width * resolution_multiplier), int(height * resolution_multiplier)
         str_result_nx_resolution = f'{nx_width}x{nx_height}'
 
         # WEB_DIRECTORY 에 정의된 js 파일에서 프론트엔드 데이터처리
@@ -218,7 +219,7 @@ class RandomImageSizeAdvancedYAML:
             },
         })
 
-        return ({"samples": latent}, width, height, nx_width, nx_height, resolution_multiplier, str_result_1x_resolution, str_result_nx_resolution)
+        return ({"samples": latent}, width, height, {"samples": nx_latent}, nx_width, nx_height, resolution_multiplier, str_result_1x_resolution, str_result_nx_resolution)
 
 
 # YAML 파일이 아닌 해상도 하드코딩값 사용
@@ -303,21 +304,21 @@ class RandomImageSizeAdvanced:
                     "default": "",
                     "multiline": True,
                     "placeholder": "add_random_resolutions\nWhen the random selection feature is enabled, it is added to the resolution list. Use commas, semicolons, and spaces to separate. Examples: 704x1344, 1024x1024; 1280x768",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "override_random_resolutions": ("STRING", {
                     "default": "",
                     "multiline": True,
                     "placeholder": "override_random_resolutions\nWhen the random selection feature is enabled, resolutions are chosen from the list you provide here. Use commas, semicolons, and spaces to separate them. Example: 704x1344, 1024x1024; 1280x768",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "str_result_1x_resolution": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
                 "str_result_nx_resolution": ("STRING", {
                     "default": "",
-                    "dynamicPrompts": False,
+                    # "dynamicPrompts": False,
                 }),
             },
             "hidden": {
@@ -327,8 +328,8 @@ class RandomImageSizeAdvanced:
         }
 
     CATEGORY = "watdafox/latent"
-    RETURN_TYPES = ("LATENT", "INT", "INT", "INT", "INT", "FLOAT", "STRING", "STRING")
-    RETURN_NAMES = ("LATENT", "width", "height", "nx_width", "nx_height", "resolution_multiplier", "str_result_1x_resolution", "str_result_nx_resolution")
+    RETURN_TYPES = ("LATENT", "INT", "INT", "LATENT", "INT", "INT", "FLOAT", "STRING", "STRING")
+    RETURN_NAMES = ("LATENT", "width", "height", "NX_LATENT", "nx_width", "nx_height", "resolution_multiplier", "str_result_1x_resolution", "str_result_nx_resolution")
     FUNCTION = "execute"
 
     OUTPUT_NODE = True
@@ -395,11 +396,12 @@ class RandomImageSizeAdvanced:
             width = (width // 64) * 64
             height = (height // 64) * 64
 
+        nx_width, nx_height = int(width * resolution_multiplier), int(height * resolution_multiplier)
+
         latent = torch.zeros([max(1, batch_size), 4, height // 8, width // 8], device=self.device)
+        nx_latent = torch.zeros([max(1, batch_size), 4, nx_height // 8, nx_width // 8], device=self.device)
 
         str_result_1x_resolution = f'{width}x{height}'
-
-        nx_width, nx_height = int(width * resolution_multiplier), int(height * resolution_multiplier)
         str_result_nx_resolution = f'{nx_width}x{nx_height}'
 
         # WEB_DIRECTORY 에 정의된 js 파일에서 프론트엔드 데이터처리, param1: event-listener-name, param2: data(json)
@@ -413,4 +415,4 @@ class RandomImageSizeAdvanced:
             },
         })
 
-        return ({"samples": latent}, width, height, nx_width, nx_height, resolution_multiplier, str_result_1x_resolution, str_result_nx_resolution)
+        return ({"samples": latent}, width, height, {"samples": nx_latent}, nx_width, nx_height, resolution_multiplier, str_result_1x_resolution, str_result_nx_resolution)
