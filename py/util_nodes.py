@@ -1,5 +1,5 @@
 from server import PromptServer
-from .utils import get_time, get_schedulers
+from .utils import get_time, get_detailer_scheduler_list, get_ksampler_samplers, get_ksampler_schedulers
 from pathlib import Path
 import random
 from typing import Any
@@ -268,29 +268,29 @@ class BFParameters:
 
                 "steps": ("INT", {"default": 30, "min": 1, "max": 1000, }),
                 "cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
-                "sampler": (comfy.samplers.KSampler.SAMPLERS, ),
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                "sampler": (get_ksampler_samplers(), ),
+                "scheduler": (get_ksampler_schedulers(), ),
                 "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
 
                 "ups_steps": ("INT", {"default": 20, "min": 1, "max": 1000, }),
                 "ups_cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
-                "ups_sampler": (comfy.samplers.KSampler.SAMPLERS, ),
-                "ups_scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                "ups_sampler": (get_ksampler_samplers(), ),
+                "ups_scheduler": (get_ksampler_schedulers(), ),
                 "ups_denoise": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
 
                 "dt_steps": ("INT", {"default": 20, "min": 1, "max": 1000, }),
                 "dt_cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
-                "dt_sampler": (comfy.samplers.KSampler.SAMPLERS, ),
-                "dt_scheduler": (get_schedulers(), ),
+                "dt_sampler": (get_ksampler_samplers(), ),
+                "dt_scheduler": (get_detailer_scheduler_list(), ),
                 "dt_denoise": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
             }
         }
 
     RETURN_TYPES = (
         "INT", 
-        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, comfy.samplers.KSampler.SCHEDULERS, "FLOAT", 
-        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, comfy.samplers.KSampler.SCHEDULERS, "FLOAT", 
-        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, get_schedulers(), "FLOAT", 
+        "INT", "FLOAT", get_ksampler_samplers(), get_ksampler_schedulers(), "FLOAT", 
+        "INT", "FLOAT", get_ksampler_samplers(), get_ksampler_schedulers(), "FLOAT", 
+        "INT", "FLOAT", get_ksampler_samplers(), get_detailer_scheduler_list(), "FLOAT", 
         "STRING", "STRING", "STRING", "STRING", "STRING", "STRING", 
     )
     RETURN_NAMES = (
@@ -333,9 +333,9 @@ class BFParametersSimple:
 
                 "steps": ("INT", {"default": 30, "min": 1, "max": 1000, }),
                 "cfg": ("FLOAT", {"default": 7.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01, }),
-                "sampler": (comfy.samplers.KSampler.SAMPLERS, ),
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
-                "dt_scheduler": (get_schedulers(), ),
+                "sampler": (get_ksampler_samplers(), ),
+                "scheduler": (get_ksampler_schedulers(), ),
+                "dt_scheduler": (get_detailer_scheduler_list(), ),
                 "denoise1": ("FLOAT", {"default": 0.2, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
                 "denoise2": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 1.0, "step": 0.01, "round": 0.001, }),
             }
@@ -343,7 +343,7 @@ class BFParametersSimple:
 
     RETURN_TYPES = (
         "INT", 
-        "INT", "FLOAT", comfy.samplers.KSampler.SAMPLERS, comfy.samplers.KSampler.SCHEDULERS, get_schedulers(), "FLOAT", "FLOAT",
+        "INT", "FLOAT", get_ksampler_samplers(), get_ksampler_schedulers(), get_detailer_scheduler_list(), "FLOAT", "FLOAT",
         "STRING", "STRING", 
     )
     RETURN_NAMES = (

@@ -1,4 +1,4 @@
-from .py import random_image_size, watda_number, util_nodes
+from .py import random_image_size, watda_number, util_nodes, parameter_nodes
 
 NODE_CLASS_MAPPINGS = {
     "RandomImageSizeAdvancedYAML": random_image_size.RandomImageSizeAdvancedYAML,
@@ -10,6 +10,12 @@ NODE_CLASS_MAPPINGS = {
     "OuputDirByModelName": util_nodes.OuputDirByModelName,
     "BFParameters": util_nodes.BFParameters,
     "BFParametersSimple": util_nodes.BFParametersSimple,
+    "CheckpointComboParameter": parameter_nodes.CheckpointComboParameter,
+    "UnetComboParameter": parameter_nodes.UnetComboParameter,
+    "VAEComboParameter": parameter_nodes.VAEComboParameter,
+    "KsamplerSamplersComboParameter": parameter_nodes.KsamplerSamplersComboParameter,
+    "KsamplerSchedulersComboParameter": parameter_nodes.KsamplerSchedulersComboParameter,
+    "DetailerSchedulerComboParameter": parameter_nodes.DetailerSchedulerComboParameter,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -22,6 +28,12 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "OuputDirByModelName": "Output Dir By Model Name (watdafox)",
     "BFParameters": "BF Parameters (watdafox)",
     "BFParametersSimple": "BF Parameters Simple (watdafox)",
+    "CheckpointComboParameter": "Checkpoint Arg (watdafox)",
+    "UnetComboParameter": "Unet Arg (watdafox)",
+    "VAEComboParameter": "VAE Arg (watdafox)",
+    "KsamplerSamplersComboParameter": "Ksampler Sampler Arg (watdafox)",
+    "KsamplerSchedulersComboParameter": "Ksampler Scheduler Arg (watdafox)",
+    "DetailerSchedulerComboParameter": "Detailer Scheduler Arg (watdafox)",
 }
 
 WEB_DIRECTORY = "./web"

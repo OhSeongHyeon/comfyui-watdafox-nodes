@@ -1,6 +1,7 @@
 import re
-from typing import List
 import time
+import folder_paths
+from typing import List
 from datetime import datetime
 import comfy
 
@@ -69,6 +70,25 @@ def get_time(pattern: str = "%Y-%m-%d %H:%M:%S") -> str:
 
 # 디테일러 스케줄러는 리스트요소가 ksam과 다름
 ADDITIONAL_SCHEDULERS = ['AYS SDXL', 'AYS SD1', 'AYS SVD', 'GITS[coeff=1.2]', 'LTXV[default]', 'OSS FLUX', 'OSS Wan', 'OSS Chroma']
-def get_schedulers():
-    return list(comfy.samplers.SCHEDULER_HANDLERS) + ADDITIONAL_SCHEDULERS
+DETAILER_SCHEDULERS = list(comfy.samplers.SCHEDULER_HANDLERS) + ADDITIONAL_SCHEDULERS
+def get_detailer_scheduler_list():
+    return DETAILER_SCHEDULERS
 
+def get_checkpoints_list():
+    return folder_paths.get_filename_list("checkpoints")
+
+def get_diffusion_models_list():
+    return folder_paths.get_filename_list("diffusion_models")
+
+WEIGHT_DTYPES = ["default", "fp8_e4m3fn", "fp8_e4m3fn_fast", "fp8_e5m2"]
+def get_weight_dtype_list():
+    return WEIGHT_DTYPES
+
+def get_vae_list():
+    return folder_paths.get_filename_list("vae")
+
+def get_ksampler_samplers():
+    return comfy.samplers.KSampler.SAMPLERS
+
+def get_ksampler_schedulers():
+    return comfy.samplers.KSampler.SCHEDULERS
