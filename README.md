@@ -19,8 +19,15 @@ A collection of custom nodes for ComfyUI. Adds utility nodes for resolution sele
 - number > RandomInteger: Randomize integer on/off toggle.
 - string > UniqueStringList: Split comma-separated strings into unique vs duplicate lists.
 - string > UniqueStringListAdvanced: Unique/duplicate split with normalization options.
-- string > OuputDirByModelName: Build output path components from model name and time.
+- string > Output Dir By Model Name: Build output path components from model name and time.
 - parameter > BFParameters: Sampling parameter pack for base/ups/dt groups.
+- parameter > BFParametersSimple: Compact parameter pack for common sampling values.
+- parameter > Checkpoint Arg: Checkpoint name passthrough with string output.
+- parameter > Unet Arg: Unet and weight dtype passthrough with string outputs.
+- parameter > VAE Arg: VAE name passthrough with string output.
+- parameter > Ksampler Sampler Arg: Sampler name passthrough with string output.
+- parameter > Ksampler Scheduler Arg: Scheduler name passthrough with string output.
+- parameter > Detailer Scheduler Arg: Detailer scheduler passthrough with string output.
 
 ## Node Details
 
@@ -37,6 +44,7 @@ Key features
 - Resolutions accept `NUMBERxNUMBER` entries separated by commas, semicolons, or spaces.
 - Width/height are rounded down to multiples of 64 unless overrides are provided.
 - The final resolutions are pushed into `str_result_1x_resolution` and `str_result_nx_resolution` in the UI.
+- If the YAML file changes between machines, the node attempts to re-sync its widget options.
 
 Inputs (main)
 - `random_pick_state`: `None`, `All`, or a YAML key.
@@ -45,7 +53,7 @@ Inputs (main)
 - `resolution_multiplier`: Scale factor used for `nx_width`/`nx_height` and `str_result_nx_resolution`.
 
 Outputs
-- `LATENT`, `width`, `height`, `nx_width`, `nx_height`, `str_result_1x_resolution`, `str_result_nx_resolution`.
+- `LATENT`, `width`, `height`, `NX_LATENT`, `nx_width`, `nx_height`, `resolution_multiplier`, `str_result_1x_resolution`, `str_result_nx_resolution`.
 
 ### latent > RandomImageSizeAdvanced
 
@@ -87,7 +95,7 @@ Outputs
 - `unique_text`: Joined unique items (`, ` when whitespace removal is enabled, otherwise `,`).
 - `duplicate_text`: Joined duplicates (`,` delimiter).
 
-### string > OuputDirByModelName
+### string > Output Dir By Model Name
 
 Builds `output_dir`, `file_name`, and `full_path` from a model name, optional prefixes, and a timestamp. Values are pushed to the UI widgets via the web event listener.
 
@@ -96,9 +104,21 @@ Key inputs
 - `folder_prefix`, `extra_filename`, `extra_number`: Optional components.
 - `use_first_dir`, `use_ckpt_name`, `use_time_folder`, `use_time_file_name`: Toggle output parts.
 
+Outputs
+- `str_model_name`: Echo of the model name.
+- `full_path`, `output_dir`, `file_name`.
+
 ### parameter > BFParameters
 
 Parameter pack that outputs base, upscaling (`ups_*`), and secondary (`dt_*`) sampling values plus string versions of sampler/scheduler names for logging or UI use.
+
+### parameter > BFParametersSimple
+
+Compact parameter pack that outputs seed, steps, cfg, sampler/scheduler, detailer scheduler, and two denoise values with string versions of sampler/scheduler names.
+
+### parameter > Checkpoint Arg / Unet Arg / VAE Arg / Ksampler Sampler Arg / Ksampler Scheduler Arg / Detailer Scheduler Arg
+
+Lightweight passthrough nodes that expose common UI combos and also output string versions for logging or routing.
 
 ## Customizing model_resolutions.yaml
 

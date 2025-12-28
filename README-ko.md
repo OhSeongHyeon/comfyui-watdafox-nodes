@@ -19,8 +19,15 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - number > RandomInteger: 랜덤 온/오프 토글 정수 선택.
 - string > UniqueStringList: 콤마 구분 문자열을 고유/중복 리스트로 분리.
 - string > UniqueStringListAdvanced: 정규화 옵션을 포함한 고유/중복 분리.
-- string > OuputDirByModelName: 모델명과 시간 기반 출력 경로 생성.
+- string > Output Dir By Model Name: 모델명과 시간 기반 출력 경로 생성.
 - parameter > BFParameters: base/ups/dt 파라미터 묶음 출력.
+- parameter > BFParametersSimple: 자주 쓰는 파라미터 묶음 출력.
+- parameter > Checkpoint Arg: 체크포인트 이름 패스스루 + 문자열 출력.
+- parameter > Unet Arg: Unet/weight dtype 패스스루 + 문자열 출력.
+- parameter > VAE Arg: VAE 이름 패스스루 + 문자열 출력.
+- parameter > Ksampler Sampler Arg: sampler 패스스루 + 문자열 출력.
+- parameter > Ksampler Scheduler Arg: scheduler 패스스루 + 문자열 출력.
+- parameter > Detailer Scheduler Arg: detailer scheduler 패스스루 + 문자열 출력.
 
 ## 노드 상세
 
@@ -37,6 +44,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - 해상도 입력은 `NUMBERxNUMBER` 형식이며 콤마, 세미콜론, 공백으로 구분.
 - 오버라이드가 없으면 64의 배수로 내림 처리.
 - 최종 해상도가 UI의 `str_result_1x_resolution`, `str_result_nx_resolution`에 반영됨.
+- YAML 파일이 로컬마다 다를 경우 위젯 옵션을 자동으로 재동기화하려고 시도합니다.
 
 입력(주요)
 - `random_pick_state`: `None`, `All`, 또는 YAML 키.
@@ -45,7 +53,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - `resolution_multiplier`: `nx_width`/`nx_height`와 `str_result_nx_resolution` 계산용 배율.
 
 출력
-- `LATENT`, `width`, `height`, `nx_width`, `nx_height`, `str_result_1x_resolution`, `str_result_nx_resolution`.
+- `LATENT`, `width`, `height`, `NX_LATENT`, `nx_width`, `nx_height`, `resolution_multiplier`, `str_result_1x_resolution`, `str_result_nx_resolution`.
 
 ### latent > RandomImageSizeAdvanced
 
@@ -87,7 +95,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - `unique_text`: 고유 항목 연결 문자열(공백 정리 시 `, `, 아니면 `,`).
 - `duplicate_text`: 중복 항목 연결 문자열(`,` 구분).
 
-### string > OuputDirByModelName
+### string > Output Dir By Model Name
 
 모델명, 접두사, 시간 정보를 조합해 `output_dir`, `file_name`, `full_path`를 생성합니다. 결과는 웹 이벤트로 UI 위젯에 반영됩니다.
 
@@ -96,9 +104,21 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - `folder_prefix`, `extra_filename`, `extra_number`: 선택적 구성요소.
 - `use_first_dir`, `use_ckpt_name`, `use_time_folder`, `use_time_file_name`: 출력 구성 토글.
 
+출력
+- `str_model_name`: 모델명 문자열 그대로 출력.
+- `full_path`, `output_dir`, `file_name`.
+
 ### parameter > BFParameters
 
 base, 업스케일(`ups_*`), 보조(`dt_*`) 파라미터를 묶어서 출력하며, sampler/scheduler 이름의 문자열 버전도 제공합니다.
+
+### parameter > BFParametersSimple
+
+seed, steps, cfg, sampler/scheduler, detailer scheduler, denoise 2개를 묶어서 출력하며 sampler/scheduler 문자열도 제공합니다.
+
+### parameter > Checkpoint Arg / Unet Arg / VAE Arg / Ksampler Sampler Arg / Ksampler Scheduler Arg / Detailer Scheduler Arg
+
+주요 콤보 위젯 값을 그대로 출력하면서 문자열 버전을 함께 제공합니다.
 
 ## model_resolutions.yaml 커스터마이징
 
