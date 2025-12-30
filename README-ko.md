@@ -20,6 +20,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - string > UniqueStringList: 콤마 구분 문자열을 고유/중복 리스트로 분리.
 - string > UniqueStringListAdvanced: 정규화 옵션을 포함한 고유/중복 분리.
 - string > Output Dir By Model Name: 모델명과 시간 기반 출력 경로 생성.
+- loader > Checkpoint Loader Advanced: 체크포인트 로더 + clip/vae 옵션 + 출력 경로 동기화.
 - parameter > BFParameters: base/ups/dt 파라미터 묶음 출력.
 - parameter > BFParametersSimple: 자주 쓰는 파라미터 묶음 출력.
 - parameter > Checkpoint Arg: 체크포인트 이름 패스스루 + 문자열 출력.
@@ -47,6 +48,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - YAML 파일이 로컬마다 다를 경우 위젯 옵션을 자동으로 재동기화하려고 시도합니다.
 
 입력(주요)
+- `batch_size`: latent 배치 크기.
 - `random_pick_state`: `None`, `All`, 또는 YAML 키.
 - `image_size`: `random_pick_state`가 `None`일 때 사용.
 - `width_override` / `height_override`: 최종 해상도를 강제 지정.
@@ -57,7 +59,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 
 ### latent > RandomImageSizeAdvanced
 
-`RandomImageSizeAdvancedYAML`과 동작은 동일하지만 `py/random_image_size.py`에 하드코딩된 해상도 리스트를 사용합니다.
+`RandomImageSizeAdvancedYAML`과 동작은 동일하지만 `py/random_image_size.py`에 하드코딩된 해상도 리스트(SDXL/Qwen/Flux/Flux2)를 사용합니다.
 
 ### number > IntegerPicker
 
@@ -108,6 +110,20 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 - `str_model_name`: 모델명 문자열 그대로 출력.
 - `full_path`, `output_dir`, `file_name`.
 
+### loader > Checkpoint Loader Advanced
+
+체크포인트를 로드하면서 clip layer 적용과 외부 VAE 선택을 지원하고, Output Dir By Model Name과 동일한 방식으로 출력 경로도 생성합니다.
+
+주요 입력
+- `ckpt_name`: 체크포인트 선택.
+- `vae_name`: `Baked VAE` 또는 VAE 파일.
+- `stop_at_clip_layer`: 0이면 기본 clip, 그 외는 clip skip 적용.
+- `enable_make_path` 및 출력 토글: Output Dir By Model Name과 동일.
+
+출력
+- `MODEL`, `CLIP`, `VAE`, `ckpt_name`.
+- `full_path`, `output_dir`, `file_name`.
+
 ### parameter > BFParameters
 
 base, 업스케일(`ups_*`), 보조(`dt_*`) 파라미터를 묶어서 출력하며, sampler/scheduler 이름의 문자열 버전도 제공합니다.
@@ -136,3 +152,7 @@ Custom:
   - "800x1200"
   - "1200x800"
 ```
+
+## 웹 확장
+
+이 노드팩은 `web/js/event-listener.js`를 통해 일부 노드(해상도 문자열, 출력 경로)의 위젯 값을 동기화합니다. ComfyUI는 커스텀 노드의 `web` 디렉터리를 자동 로드합니다.

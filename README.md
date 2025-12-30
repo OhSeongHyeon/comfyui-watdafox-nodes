@@ -20,6 +20,7 @@ A collection of custom nodes for ComfyUI. Adds utility nodes for resolution sele
 - string > UniqueStringList: Split comma-separated strings into unique vs duplicate lists.
 - string > UniqueStringListAdvanced: Unique/duplicate split with normalization options.
 - string > Output Dir By Model Name: Build output path components from model name and time.
+- loader > Checkpoint Loader Advanced: Checkpoint loader with clip/vae options plus output path syncing.
 - parameter > BFParameters: Sampling parameter pack for base/ups/dt groups.
 - parameter > BFParametersSimple: Compact parameter pack for common sampling values.
 - parameter > Checkpoint Arg: Checkpoint name passthrough with string output.
@@ -47,6 +48,7 @@ Key features
 - If the YAML file changes between machines, the node attempts to re-sync its widget options.
 
 Inputs (main)
+- `batch_size`: Latent batch size.
 - `random_pick_state`: `None`, `All`, or a YAML key.
 - `image_size`: Used when `random_pick_state` is `None`.
 - `width_override` / `height_override`: Force final resolution.
@@ -57,7 +59,7 @@ Outputs
 
 ### latent > RandomImageSizeAdvanced
 
-Same behavior as `RandomImageSizeAdvancedYAML`, but uses hardcoded resolution lists inside `py/random_image_size.py`.
+Same behavior as `RandomImageSizeAdvancedYAML`, but uses hardcoded resolution lists inside `py/random_image_size.py` (SDXL/Qwen/Flux/Flux2 presets).
 
 ### number > IntegerPicker
 
@@ -108,6 +110,20 @@ Outputs
 - `str_model_name`: Echo of the model name.
 - `full_path`, `output_dir`, `file_name`.
 
+### loader > Checkpoint Loader Advanced
+
+Loads a checkpoint with optional clip layer override and optional external VAE, plus the same output path generation used by Output Dir By Model Name.
+
+Key inputs
+- `ckpt_name`: Checkpoint selection.
+- `vae_name`: `Baked VAE` or a specific VAE file.
+- `stop_at_clip_layer`: 0 uses the default clip, otherwise applies clip skip.
+- `enable_make_path` and path toggles: Same behavior as Output Dir By Model Name.
+
+Outputs
+- `MODEL`, `CLIP`, `VAE`, `ckpt_name`.
+- `full_path`, `output_dir`, `file_name`.
+
 ### parameter > BFParameters
 
 Parameter pack that outputs base, upscaling (`ups_*`), and secondary (`dt_*`) sampling values plus string versions of sampler/scheduler names for logging or UI use.
@@ -136,3 +152,7 @@ Custom:
   - "800x1200"
   - "1200x800"
 ```
+
+## Web Extension
+
+This pack ships `web/js/event-listener.js` to sync widget values for certain nodes (resolution strings and output paths). ComfyUI loads the `web` directory automatically when the custom node is installed.

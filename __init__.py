@@ -1,4 +1,4 @@
-from .py import random_image_size, watda_number, util_nodes, parameter_nodes
+from .py import random_image_size, watda_number, util_nodes, parameter_nodes, loader_nodes
 
 NODE_CLASS_MAPPINGS = {
     "RandomImageSizeAdvancedYAML": random_image_size.RandomImageSizeAdvancedYAML,
@@ -16,6 +16,7 @@ NODE_CLASS_MAPPINGS = {
     "KsamplerSamplersComboParameter": parameter_nodes.KsamplerSamplersComboParameter,
     "KsamplerSchedulersComboParameter": parameter_nodes.KsamplerSchedulersComboParameter,
     "DetailerSchedulerComboParameter": parameter_nodes.DetailerSchedulerComboParameter,
+    "CheckpointLoaderWithOuputDirByModelName": loader_nodes.CheckpointLoaderWithOuputDirByModelName,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -34,6 +35,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "KsamplerSamplersComboParameter": "Ksampler Sampler Arg (watdafox)",
     "KsamplerSchedulersComboParameter": "Ksampler Scheduler Arg (watdafox)",
     "DetailerSchedulerComboParameter": "Detailer Scheduler Arg (watdafox)",
+    "CheckpointLoaderWithOuputDirByModelName": "Checkpoint Loader Advanced (watdafox)"
 }
 
 WEB_DIRECTORY = "./web"

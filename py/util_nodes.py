@@ -160,11 +160,9 @@ class OuputDirByModelName:
                 }),
                 "folder_prefix": ("STRING", {
                     "default": "",
-                    # "dynamicPrompts": False,
                 }),
                 "extra_filename": ("STRING", {
                     "default": "",
-                    # "dynamicPrompts": False,
                 }),
                 "extra_number": ("INT", {
                     "default": -1,
@@ -186,15 +184,12 @@ class OuputDirByModelName:
                 }),
                 "full_path": ("STRING", {
                     "default": "",
-                    # "dynamicPrompts": False,
                 }),
                 "output_dir": ("STRING", {
                     "default": "",
-                    # "dynamicPrompts": False,
                 }),
                 "file_name": ("STRING", {
                     "default": "",
-                    # "dynamicPrompts": False,
                 }),
             },
             "hidden": {
