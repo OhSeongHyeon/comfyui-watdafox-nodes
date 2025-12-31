@@ -15,7 +15,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 
 - latent > RandomImageSizeAdvancedYAML: YAML 프리셋과 런타임 오버라이드로 랜덤/고정 해상도 선택.
 - latent > RandomImageSizeAdvanced: 동일 기능이지만 하드코딩된 프리셋 사용.
-- number > IntegerPicker: 고정, 증가, 감소, 랜덤 정수 선택.
+- number > CyclicInteger: 고정, 증가, 감소, 랜덤 정수 선택.
 - number > RandomInteger: 랜덤 온/오프 토글 정수 선택.
 - string > UniqueStringList: 콤마 구분 문자열을 고유/중복 리스트로 분리.
 - string > UniqueStringListAdvanced: 정규화 옵션을 포함한 고유/중복 분리.
@@ -61,7 +61,7 @@ ComfyUI용 커스텀 노드 모음입니다. 해상도 선택, 정수 선택, �
 
 `RandomImageSizeAdvancedYAML`과 동작은 동일하지만 `py/random_image_size.py`에 하드코딩된 해상도 리스트(SDXL/Qwen/Flux/Flux2)를 사용합니다.
 
-### number > IntegerPicker
+### number > CyclicInteger
 
 모드에 따라 정수를 선택합니다.
 - `fixed`: 입력값 유지.

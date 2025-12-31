@@ -15,7 +15,7 @@ A collection of custom nodes for ComfyUI. Adds utility nodes for resolution sele
 
 - latent > RandomImageSizeAdvancedYAML: Random or fixed resolution with YAML presets and runtime overrides.
 - latent > RandomImageSizeAdvanced: Same behavior, but uses hardcoded presets.
-- number > IntegerPicker: Fixed, increment, decrement, or random integer selection.
+- number > CyclicInteger: Fixed, increment, decrement, or random integer selection.
 - number > RandomInteger: Randomize integer on/off toggle.
 - string > UniqueStringList: Split comma-separated strings into unique vs duplicate lists.
 - string > UniqueStringListAdvanced: Unique/duplicate split with normalization options.
@@ -61,7 +61,7 @@ Outputs
 
 Same behavior as `RandomImageSizeAdvancedYAML`, but uses hardcoded resolution lists inside `py/random_image_size.py` (SDXL/Qwen/Flux/Flux2 presets).
 
-### number > IntegerPicker
+### number > CyclicInteger
 
 Selects an integer based on a mode:
 - `fixed`: Keep the incoming value.

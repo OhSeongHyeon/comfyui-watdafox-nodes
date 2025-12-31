@@ -1,9 +1,12 @@
 import random
 from server import PromptServer
+import hashlib
 
 
-class IntegerPicker:
+class CyclicInteger:
+
     def __init__(self):
+        self._before_integer = 0
         pass
 
     @classmethod
@@ -34,7 +37,7 @@ class IntegerPicker:
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
-                "extra_pnginfo": "EXTRA_PNGINFO",
+                # "extra_pnginfo": "EXTRA_PNGINFO",
             },
         }
 
@@ -46,22 +49,41 @@ class IntegerPicker:
     OUTPUT_NODE = True
 
     @classmethod
-    def IS_CHANGED(self, *args, **kwargs):
+    def IS_CHANGED(cls, *args, **kwargs):
+        # return float("NaN")  # 항상 재실행
+        mode = kwargs.get("mode", None)
+        min_value = kwargs.get("min_value", 0)
+        max_value = kwargs.get("max_value", 0)
+
+        if mode == "fixed" or min_value == max_value:
+            return False
         return float("NaN")
 
-    def execute(self, integer: int = 0, mode: str = "randomize", min_value: int = 0, max_value: int = 0, unique_id = None, extra_pnginfo = None):
+    def execute(self, integer: int = 0, mode: str = "randomize", min_value: int = 0, max_value: int = 0, unique_id = None,):
+        if mode == "fixed" or min_value == max_value:
+            return (integer, str(integer))
+
         if min_value > max_value:
             min_value, max_value = max_value, min_value
         
         result_integer = integer
         current_range = max_value - min_value + 1
 
-        if mode == "randomize":
-            result_integer = random.randint(min_value, max_value)
-        elif mode == "increment":
-            result_integer = (integer - min_value + 1) % current_range + min_value
-        elif mode == "decrement":
-            result_integer = (integer - min_value - 1 + current_range) % current_range + min_value
+        match mode:
+            case "increment":
+                result_integer = (integer - min_value + 1) % current_range + min_value
+            case "decrement":
+                result_integer = (integer - min_value - 1 + current_range) % current_range + min_value
+            case _:  # randomize
+                rdint = random.randint(min_value, max_value)
+                loop_exit = 100
+
+                # 똑같은거 나올확률 제거
+                while loop_exit > 0 and min_value != max_value and rdint == self._before_integer:
+                    rdint = random.randint(min_value, max_value)
+                    loop_exit -= 1
+
+                result_integer = rdint
 
         PromptServer.instance.send_sync("watdafox-api", {
             "node_id": unique_id,
@@ -70,6 +92,7 @@ class IntegerPicker:
             "data": result_integer
         })
 
+        self._before_integer = result_integer
         return (result_integer, str(result_integer))
     
 
@@ -92,12 +115,12 @@ class RandomInteger:
                 "random_on_off": ("BOOLEAN", {
                     "default": True,
                 }),
-                "min": ("INT", {
+                "min_value": ("INT", {
                     "default": 1,
                     "min": -0x80000000,
                     "max": 0x7FFFFFFF,
                 }),
-                "max": ("INT", {
+                "max_value": ("INT", {
                     "default": 3,
                     "min": -0x80000000,
                     "max": 0x7FFFFFFF,
@@ -105,7 +128,7 @@ class RandomInteger:
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
-                "extra_pnginfo": "EXTRA_PNGINFO",
+                # "extra_pnginfo": "EXTRA_PNGINFO",
             },
         }
 
@@ -118,19 +141,29 @@ class RandomInteger:
 
     @classmethod
     def IS_CHANGED(self, *args, **kwargs):
+        random_on_off = kwargs.get("random_on_off", True)
+        min_value = kwargs.get("min_value", 0)
+        max_value = kwargs.get("max_value", 0)
+
+        if not random_on_off or min_value == max_value:
+            return False
         return float("NaN")
 
-    def execute(self, integer: int = 0, random_on_off: bool = True, min: int = 0, max: int = 0, unique_id = None, extra_pnginfo = None):
-        if min > max:
-            min, max = max, min
-        
-        result_integer = random.randint(min, max) if random_on_off else integer
+    def execute(self, integer: int = 0, random_on_off: bool = True, min_value: int = 0, max_value: int = 0, unique_id = None,):
+        if random_on_off:
+            if min_value > max_value:
+                min_value, max_value = max_value, min_value
 
-        PromptServer.instance.send_sync("watdafox-api", {
-            "node_id": unique_id,
-            "target_widget_name": "integer",
-            "data_type": "text",
-            "data": result_integer
-        })
+            # CyclicInteger 과 다르게 똑같은거 나와도 ㄱㅊ
+            result_integer = random.randint(min_value, max_value)
 
-        return (result_integer, str(result_integer))
+            PromptServer.instance.send_sync("watdafox-api", {
+                "node_id": unique_id,
+                "target_widget_name": "integer",
+                "data_type": "text",
+                "data": result_integer
+            })
+
+            return (result_integer, str(result_integer))
+
+        return (integer, str(integer))

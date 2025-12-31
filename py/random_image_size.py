@@ -120,9 +120,9 @@ class RandomImageSizeAdvancedYAML:
     # 사용 로컬마다 yaml 파일 다를 경우 노드위젯 교정시도
     @classmethod
     def VALIDATE_INPUTS(self, **kwargs):
-        random_pick_state = kwargs.get("random_pick_state")
-        image_size = kwargs.get("image_size")
-        unique_id = kwargs.get("unique_id")
+        random_pick_state = kwargs.get("random_pick_state", None)
+        image_size = kwargs.get("image_size", None)
+        unique_id = kwargs.get("unique_id", None)
         #print(f"random_pick_state: {random_pick_state}, image_size: {image_size}, unique_id: {unique_id}")
 
         if random_pick_state not in self.RESOLUTIONS_KEY_LIST or image_size not in self.ALL_RESOLUTIONS_LIST:
@@ -140,6 +140,8 @@ class RandomImageSizeAdvancedYAML:
 
     @classmethod
     def IS_CHANGED(s, *args, **kwargs):
+        if kwargs.get("random_pick_state", None) == "None":
+            return False
         return float("NaN")
 
     def execute(
@@ -336,6 +338,8 @@ class RandomImageSizeAdvanced:
 
     @classmethod
     def IS_CHANGED(s, *args, **kwargs):
+        if kwargs.get("random_pick_state", None) == "None":
+            return False
         return float("NaN")
 
     def execute(

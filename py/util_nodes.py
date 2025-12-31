@@ -207,7 +207,7 @@ class OuputDirByModelName:
 
     @classmethod
     def IS_CHANGED(self, *args, **kwargs):
-        return float("NaN")
+        return float("NaN")  # 항상 재실행
 
     def execute(
         self,

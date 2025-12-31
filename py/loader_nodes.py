@@ -8,7 +8,7 @@ from comfy.sd import VAE, CLIP
 from comfy.clip_vision import ClipVisionModel
 from comfy.model_patcher import ModelPatcher
 
-# 저장경로 생성때문에 로라 다시 로딩하는 현상있음...
+# 저장경로 생성 활성화: 로라 다시 로딩하는 현상있음
 class CheckpointLoaderWithOuputDirByModelName:
     def __init__(self):
         self._cache_ckpt: ModelPatcher = None
@@ -127,7 +127,6 @@ class CheckpointLoaderWithOuputDirByModelName:
     # OUTPUT_NODE = True
 
     """
-    loader_nodes.py 의 CheckpointLoaderWithOuputDirByModelName 클래스의 excute 메서드 로직 검증요청
     Checkpoint Load 규칙, 체크포인트 로딩 함수 _load_ckpt, clip layer 수정 함수 _set_last_layer, VAE 로딩 함수 _load_vae
     1. 캐시(_cache_ckpt, _cache_clip, _cache_vae)들 중 하나라도 None 일 경우,
         모델을 로딩하고 캐시에 _cache_ckpt, _cache_clip, _cache_vae, _cache_ckpt_path(ckpt 경로), _cache_clip_skip(stop_at_clip_layer), _cache_vae_name (vae 이름)을 캐싱함

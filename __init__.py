@@ -3,7 +3,7 @@ from .py import random_image_size, watda_number, util_nodes, parameter_nodes, lo
 NODE_CLASS_MAPPINGS = {
     "RandomImageSizeAdvancedYAML": random_image_size.RandomImageSizeAdvancedYAML,
     "RandomImageSizeAdvanced": random_image_size.RandomImageSizeAdvanced,
-    "IntegerPicker": watda_number.IntegerPicker,
+    "CyclicInteger": watda_number.CyclicInteger,
     "RandomInteger": watda_number.RandomInteger,
     "UniqueStringList": util_nodes.UniqueStringList,
     "UniqueStringListAdvanced": util_nodes.UniqueStringListAdvanced,
@@ -22,7 +22,7 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "RandomImageSizeAdvancedYAML": "Random Image Size YAML (watdafox)",
     "RandomImageSizeAdvanced": "Random Image Size Advanced (watdafox)",
-    "IntegerPicker": "Integer Picker (watdafox)",
+    "CyclicInteger": "Cyclic Integer (watdafox)",
     "RandomInteger": "Random Integer (watdafox)",
     "UniqueStringList": "Unique Text (watdafox)",
     "UniqueStringListAdvanced": "Unique Text Advanced (watdafox)",
